@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🔥 3D Галерея + Слайдер</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background: #111;
+      color: #fff;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+
+    .filters {
+      margin-top: 1rem;
+    }
+
+    .filters button {
+      margin: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #444;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .filters button:hover {
+      background: #666;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .card {
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .card img {
+      width: 100%;
+      transition: transform 0.5s ease;
+      transform-style: preserve-3d;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    }
+
+    .card:hover img {
+      transform: rotateY(15deg) scale(1.05);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      flex-direction: column;
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .modal img {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 10px;
+    }
+
+    #closeModal {
+      position: absolute;
+      top: 2rem;
+      right: 3rem;
+      font-size: 3rem;
+      cursor: pointer;
+      color: white;
+    }
+
+    .slider-controls {
+      display: flex;
+      justify-content: space-between;
+      width: 90%;
+      max-width: 800px;
+      margin-top: 1rem;
+    }
+
+    .slider-btn {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .slider-btn:hover {
+      background: #555;
+    }
+  </style>
+<!-- Code injected by Five-server -->
+  <script async data-id="five-server" data-file="c:\Users\Texnomir\Desktop\practise\index.html" type="application/javascript" src="/fiveserver.js"></script>
+  </head>
+<body>
+  <header>
+    <h1>🔥 3D Галерея + Слайдер</h1>
+    <div class="filters">
+      <button data-filter="all">Все</button>
+      <button data-filter="nature">Природа</button>
+      <button data-filter="tech">Технологии</button>
+      <button data-filter="city">Город</button>
+    </div>
+  </header>
+
+  <main class="gallery">
+    <!-- 15 карточек -->
+    <div class="card" data-category="nature"><img src="https://picsum.photos/id/1018/400/300" alt="Nature"></div>
+    <div class="card" data-category="tech"><img src="https://picsum.photos/id/1/400/300" alt="Tech"></div>
+    <div class="card" data-category="nature"><img src="https://picsum.photos/id/1025/400/300" alt="Nature"></div>
+    <div class="card" data-category="tech"><img src="https://picsum.photos/id/180/400/300" alt="Tech"></div>
+    <div class="card" data-category="nature"><img src="https://picsum.photos/id/1043/400/300" alt="Nature"></div>
+    <div class="card" data-category="city"><img src="https://picsum.photos/id/1015/400/300" alt="City"></div>
+    <div class="card" data-category="city"><img src="https://picsum.photos/id/1033/400/300" alt="City"></div>
+    <div class="card" data-category="tech"><img src="https://picsum.photos/id/9/400/300" alt="Tech"></div>
+    <div class="card" data-category="nature"><img src="https://picsum.photos/id/1020/400/300" alt="Nature"></div>
+    <div class="card" data-category="tech"><img src="https://picsum.photos/id/0/400/300" alt="Tech"></div>
+    <div class="card" data-category="city"><img src="https://picsum.photos/id/1003/400/300" alt="City"></div>
+    <div class="card" data-category="nature"><img src="https://picsum.photos/id/1050/400/300" alt="Nature"></div>
+    <div class="card" data-category="city"><img src="https://picsum.photos/id/1060/400/300" alt="City"></div>
+    <div class="card" data-category="tech"><img src="https://picsum.photos/id/8/400/300" alt="Tech"></div>
+    <div class="card" data-category="nature"><img src="https://picsum.photos/id/1036/400/300" alt="Nature"></div>
+  </main>
+
+  <div id="modal" class="modal hidden">
+    <span id="closeModal">&times;</span>
+    <img id="modalImg" src="" alt="Preview">
+    <div class="slider-controls">
+      <button class="slider-btn" id="prevBtn">◀ Назад</button>
+      <button class="slider-btn" id="nextBtn">Вперёд ▶</button>
+    </div>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.filters button');
+    const cards = document.querySelectorAll('.card');
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modalImg');
+    const closeModal = document.getElementById('closeModal');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    let currentIndex = 0;
+    let visibleCards = [];
+
+    // Фильтрация
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter;
+        visibleCards = [];
+        cards.forEach((card, index) => {
+          if (filter === 'all' || card.dataset.category === filter) {
+            card.style.display = 'block';
+            visibleCards.push(card);
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Начальное состояние (все видимые)
+    visibleCards = Array.from(cards);
+
+    // Открыть модалку
+    cards.forEach((card, index) => {
+      card.addEventListener('click', () => {
+        visibleCards = Array.from(cards).filter(c => c.style.display !== 'none');
+        currentIndex = visibleCards.indexOf(card);
+        showImage(currentIndex);
+        modal.classList.remove('hidden');
+      });
+    });
+
+    // Показ изображения
+    function showImage(index) {
+      const img = visibleCards[index].querySelector('img');
+      modalImg.src = img.src;
+    }
+
+    // Закрытие модалки
+    closeModal.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+
+    modal.addEventListener('click', e => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+      }
+    });
+
+    // Навигация
+    nextBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % visibleCards.length;
+      showImage(currentIndex);
+    });
+
+    prevBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + visibleCards.length) % visibleCards.length;
+      showImage(currentIndex);
+    });
+
+    // Стрелки клавиатуры
+    document.addEventListener('keydown', e => {
+      if (!modal.classList.contains('hidden')) {
+        if (e.key === 'ArrowRight') nextBtn.click();
+        if (e.key === 'ArrowLeft') prevBtn.click();
+        if (e.key === 'Escape') closeModal.click();
+      }
+    });
+  </script>
+</body>
+</html> 
+
